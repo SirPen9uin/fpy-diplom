@@ -12,6 +12,7 @@ class File(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     comment = models.TextField(null=True, blank=True)
+    external_link = models.URLField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.file.name} ({self.owner.username})"
