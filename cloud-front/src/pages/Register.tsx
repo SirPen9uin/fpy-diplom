@@ -9,11 +9,34 @@ const Register = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const validateInputs = () => {
+    const loginRegex = /^[a-zA-Z][a-zA-Z0-9]{3,19}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+    if (!loginRegex.test(login)) {
+      return "Логин должен содержать только латинские буквы и цифры, начинаться с буквы и быть длиной 4-20 символов.";
+    }
+    if (!emailRegex.test(email)) {
+      return "Некорректный email.";
+    }
+    if (!passwordRegex.test(password)) {
+      return "Пароль должен быть не менее 6 символов, содержать заглавную букву, цифру и спецсимвол.";
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const response = await fetch("http://127.0.0.1:8000/api/register/", {
+    const validationError = validateInputs();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    const response = await fetch("http://127.0.0.1:8000/auth/register/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: login, full_name: fullName, email, password }),
