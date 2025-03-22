@@ -1,3 +1,4 @@
+import json
 import os
 
 from django.http import JsonResponse, FileResponse
@@ -8,6 +9,8 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
 from django.conf import settings
+
+from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
@@ -21,51 +24,50 @@ UPLOAD_DIR = os.path.join(settings.MEDIA_ROOT, "uploads")
 @api_view(["POST"])
 def upload_file(request):
     """Эндпоинт для загрузки файла"""
+    if request.method != "POST":
+        return JsonResponse({"error": "Метод не поддерживается"}, status=405)
+    
     token_key = request.headers.get("Authorization")
     if not token_key or not token_key.startswith("Token "):
         return JsonResponse({"error": "Требуется аутентификация"}, status=401)
-
+    
     try:
         token = Token.objects.get(key=token_key.split(" ")[1])
         user = token.user
     except Token.DoesNotExist:
         return JsonResponse({"error": "Неверный токен"}, status=401)
-
-    if "file" not in request.FILES:
-        return JsonResponse({"error": "Файл не найден в запросе"}, status=400)
-
-    uploaded_file = request.FILES["file"]
-    file_instance = File.objects.create(file=uploaded_file, owner=user)
-
-    return JsonResponse({"message": "Файл загружен", "file": file_instance.file.name})
+    
+    file = request.FILES.get("file")
+    if not file:
+        return JsonResponse({"error": "Файл не предоставлен"}, status=400)
+    
+    comment = request.POST.get("comment", "")
+    
+    file_instance = File.objects.create(file=file, owner=user, comment=comment)
+    
+    return JsonResponse({"message": "Файл загружен", "file": file_instance.file.name, "comment": file_instance.comment})
 
 @csrf_exempt
 @api_view(["GET"])
 def list_files(request):
-    """Эндпоинт для получения списка файлов пользователя"""
-    token_key = request.headers.get("Authorization")
-
-    if not token_key or not token_key.startswith("Token "):
-        return JsonResponse({"error": "Требуется аутентификация"}, status=401)
-
-    try:
-        token = Token.objects.get(key=token_key.split(" ")[1])
-        user = token.user
-    except Token.DoesNotExist:
-        return JsonResponse({"error": "Неверный токен"}, status=401)
-
-    # Получаем файлы пользователя из базы
-    files = File.objects.filter(owner=user)
-
-    files_data = [
-        {
-            "name": file.file.name.split("/")[-1],
-            "url": request.build_absolute_uri(file.file.url),
-        }
-        for file in files
-    ]
-
-    return JsonResponse({"files": files_data}, status=200)
+    """Эндпоинт для получения списка файлов"""
+    if request.method == "GET":
+        token_key = request.headers.get("Authorization")
+        if not token_key or not token_key.startswith("Token "):
+            return JsonResponse({"error": "Требуется аутентификация"}, status=401)
+        
+        try:
+            token = Token.objects.get(key=token_key.split(" ")[1])
+            user = token.user
+        except Token.DoesNotExist:
+            return JsonResponse({"error": "Неверный токен"}, status=401)
+        
+        files = File.objects.filter(owner=user)
+        file_list = [{"name": file.file.name, "url": request.build_absolute_uri(file.file.url), "comment": file.comment} for file in files]
+        
+        return JsonResponse({"files": file_list}, status=200)
+    
+    return JsonResponse({"error": "Метод не поддерживается"}, status=405)
 
 @csrf_exempt
 @api_view(["GET"])
@@ -161,4 +163,37 @@ def rename_file(request):
     file_instance.save()
 
     return JsonResponse({"message": "Файл переименован", "new_name": new_name})
+
+@csrf_exempt
+@api_view(["PATCH"])
+def update_comment(request, filename):
+    """Эндпоинт для обновления комментария к файлу"""
+    if request.method != "PATCH":
+        return JsonResponse({"error": "Метод не поддерживается"}, status=405)
+    
+    token_key = request.headers.get("Authorization")
+    if not token_key or not token_key.startswith("Token "):
+        return JsonResponse({"error": "Требуется аутентификация"}, status=401)
+    
+    try:
+        token = Token.objects.get(key=token_key.split(" ")[1])
+        user = token.user
+    except Token.DoesNotExist:
+        return JsonResponse({"error": "Неверный токен"}, status=401)
+    
+    file = get_object_or_404(File, file="uploads/" + filename, owner=user)
+    
+    try:
+        data = json.loads(request.body)
+        new_comment = data.get("comment")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Неверный формат JSON"}, status=400)
+    
+    if new_comment is None:
+        return JsonResponse({"error": "Комментарий не указан"}, status=400)
+    
+    file.comment = new_comment
+    file.save()
+    
+    return JsonResponse({"message": "Комментарий обновлен", "comment": file.comment})
 
