@@ -61,7 +61,7 @@ def login_view(request):
 
             # Получаем или создаем токен
             token, _ = Token.objects.get_or_create(user=user)
-            return JsonResponse({"message": "Успешный вход", "token": token.key})
+            return JsonResponse({"message": "Успешный вход", "token": token.key, "user": {"username": user.username}})
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
