@@ -26,7 +26,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loginUser: (state, action: PayloadAction<{ user: { username: string }; token: string }>) => {
-      console.log("Данные при логине:", action.payload); // Логируем данные
+      console.log("Данные при логине:", action.payload);
     
       if (!action.payload.user || !action.payload.token) {
         console.error("Ошибка: user или token отсутствует в payload");

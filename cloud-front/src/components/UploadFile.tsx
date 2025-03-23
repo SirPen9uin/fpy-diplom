@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const UploadFile = () => {
   const [file, setFile] = useState<File | null>(null);
   const [comment, setComment] = useState("");
@@ -26,7 +28,7 @@ const UploadFile = () => {
     formData.append("comment", comment);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/storage/upload/", {
+      const response = await fetch(`${API_BASE_URL}/storage/upload/`, {
         method: "POST",
         headers: {
           Authorization: `Token ${localStorage.getItem("token")}`,
