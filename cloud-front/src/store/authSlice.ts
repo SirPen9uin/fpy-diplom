@@ -2,10 +2,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
   user: { username: string } | null;
+  token: string | null;
 }
 
 const initialState: AuthState = {
   user: null,
+  token: localStorage.getItem("token") || null
 };
 
 const authSlice = createSlice({
@@ -17,6 +19,8 @@ const authSlice = createSlice({
     },
     logoutUser: (state) => {
       state.user = null;
+      state.token = null;
+      localStorage.removeItem("token"); // Удаляем токен
     },
   },
 });

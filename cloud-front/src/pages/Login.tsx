@@ -13,19 +13,21 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
+  
     const response = await fetch("http://127.0.0.1:8000/auth/login/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: login, password }),
+      body: JSON.stringify({ email: login, password }),
     });
-
+  
+    const responseData = await response.json();
+    console.log("Ответ сервера:", responseData);
+  
     if (response.ok) {
-      const data = await response.json();
-      dispatch(loginUser(data)); // Сохраняем пользователя в Redux
-      navigate("/dashboard"); // Перенаправляем после входа
+      dispatch(loginUser(responseData));
+      navigate("/dashboard");
     } else {
-      setError("Неверные данные для входа");
+      setError(responseData.error || "Ошибка входа");
     }
   };
 
@@ -36,7 +38,7 @@ const Login = () => {
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Логин"
+          placeholder="E-mail"
           value={login}
           onChange={(e) => setLogin(e.target.value)}
           required

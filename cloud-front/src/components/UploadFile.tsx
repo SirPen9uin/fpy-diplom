@@ -26,7 +26,7 @@ const UploadFile = () => {
     formData.append("comment", comment);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/upload/", {
+      const response = await fetch("http://127.0.0.1:8000/storage/upload/", {
         method: "POST",
         headers: {
           Authorization: `Token ${localStorage.getItem("token")}`,
