@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'storage',
     'auth_app',
+    'admin_panel',
 ]
 
 MIDDLEWARE = [
@@ -146,7 +147,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "cloud_back", "media")
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
