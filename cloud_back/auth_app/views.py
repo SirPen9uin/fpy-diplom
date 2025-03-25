@@ -2,7 +2,7 @@ import json
 import os
 
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
 
 from django.http import JsonResponse, FileResponse
@@ -55,13 +55,13 @@ def login_view(request):
             except User.DoesNotExist:
                 return JsonResponse({"error": "Пользователь не найден"}, status=400)
 
-            user = authenticate(username=user.username, password=password)
+            user = authenticate(request, username=user.username, password=password)
             if user is None:
                 return JsonResponse({"error": "Неверный пароль"}, status=400)
 
-            # Получаем или создаем токен
-            token, _ = Token.objects.get_or_create(user=user)
-            return JsonResponse({"message": "Успешный вход", "token": token.key, "user": {"username": user.username}})
+            login(request, user)
+            
+            return JsonResponse({"message": "Успешный вход", "user": {"username": user.username}})
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)

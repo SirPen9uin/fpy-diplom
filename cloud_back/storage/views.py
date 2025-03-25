@@ -5,6 +5,7 @@ import uuid
 from django.http import JsonResponse, FileResponse
 
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -22,21 +23,13 @@ from .models import File
 UPLOAD_DIR = os.path.join(settings.MEDIA_ROOT, "uploads")
 
 @csrf_exempt
-@api_view(["POST"])
+@login_required
 def upload_file(request):
     """Эндпоинт для загрузки файла"""
     if request.method != "POST":
         return JsonResponse({"error": "Метод не поддерживается"}, status=405)
     
-    token_key = request.headers.get("Authorization")
-    if not token_key or not token_key.startswith("Token "):
-        return JsonResponse({"error": "Требуется аутентификация"}, status=401)
-    
-    try:
-        token = Token.objects.get(key=token_key.split(" ")[1])
-        user = token.user
-    except Token.DoesNotExist:
-        return JsonResponse({"error": "Неверный токен"}, status=401)
+    user = request.user
     
     file = request.FILES.get("file")
     if not file:
@@ -44,47 +37,44 @@ def upload_file(request):
     
     comment = request.POST.get("comment", "")
     
-    file_instance = File.objects.create(file=file, owner=user, comment=comment)
+    file_instance = File.objects.create(file=file, owner=request.user, comment=comment)
     
-    return JsonResponse({"message": "Файл загружен", "file": file_instance.file.name, "comment": file_instance.comment})
+    return JsonResponse({
+        "message": "Файл загружен",
+        "file": file_instance.file.name,
+        "comment": file_instance.comment
+    })
 
 
-@csrf_exempt
-@api_view(["GET"])
+@login_required
 def list_files(request):
     """Эндпоинт для получения списка файлов"""
-    if request.method == "GET":
-        token_key = request.headers.get("Authorization")
-        if not token_key or not token_key.startswith("Token "):
-            return JsonResponse({"error": "Требуется аутентификация"}, status=401)
-        
-        try:
-            token = Token.objects.get(key=token_key.split(" ")[1])
-            user = token.user
-        except Token.DoesNotExist:
-            return JsonResponse({"error": "Неверный токен"}, status=401)
-        
-        files = File.objects.filter(owner=user)
-        file_list = [{"name": file.file.name, "url": request.build_absolute_uri(file.file.url), "comment": file.comment, "external_link": file.external_link} for file in files]
-        
-        return JsonResponse({"files": file_list}, status=200)
+    if request.method != "GET":
+        return JsonResponse({"error": "Метод не поддерживается"}, status=405)
     
-    return JsonResponse({"error": "Метод не поддерживается"}, status=405)
+    user = request.user
+
+    files = File.objects.filter(owner=user)
+    
+    file_list = [
+        {
+            "name": file.file.name,
+            "url": request.build_absolute_uri(file.file.url),
+            "comment": file.comment,
+            "external_link": file.external_link
+        }
+        for file in files
+    ]
+    
+    return JsonResponse({"files": file_list}, status=200)
 
 @csrf_exempt
-@api_view(["GET"])
+@login_required
 def download_file(request, filename):
     """Эндпоинт для скачивания файла"""
-    token_key = request.headers.get("Authorization")
-
-    if not token_key or not token_key.startswith("Token "):
-        return JsonResponse({"error": "Требуется аутентификация"}, status=401)
-
-    try:
-        token = Token.objects.get(key=token_key.split(" ")[1])
-        user = token.user
-    except Token.DoesNotExist:
-        return JsonResponse({"error": "Неверный токен"}, status=401)
+    if request.method != "GET":
+        return JsonResponse({"error": "Метод не поддерживается"}, status=405)
+    user = request.user
 
     # Ищем файл в базе
     try:
@@ -97,19 +87,12 @@ def download_file(request, filename):
 
 
 @csrf_exempt
-@api_view(["DELETE"])
+@login_required
 def delete_file(request, filename):
+    if request.method != "DELETE":
+        return JsonResponse({"error": "Метод не поддерживается"}, status=405)
     """Эндпоинт для удаления файла"""
-    token_key = request.headers.get("Authorization")
-
-    if not token_key or not token_key.startswith("Token "):
-        return JsonResponse({"error": "Требуется аутентификация"}, status=401)
-
-    try:
-        token = Token.objects.get(key=token_key.split(" ")[1])
-        user = token.user
-    except Token.DoesNotExist:
-        return JsonResponse({"error": "Неверный токен"}, status=401)
+    user = request.user
 
     # Проверяем файл в базе
     try:
@@ -125,23 +108,21 @@ def delete_file(request, filename):
 
 
 @csrf_exempt
-@api_view(["POST", "PATCH"])
+@login_required
 def rename_file(request):
     """Эндпоинт для переименования файла"""
-    token_key = request.headers.get("Authorization")
+    if request.method != "POST" and request.method != "PATCH":
+        return JsonResponse({"error": "Метод не поддерживается"}, status=405)
 
-    if not token_key or not token_key.startswith("Token "):
-        return JsonResponse({"error": "Требуется аутентификация"}, status=401)
+    user = request.user
 
     try:
-        token = Token.objects.get(key=token_key.split(" ")[1])
-        user = token.user
-    except Token.DoesNotExist:
-        return JsonResponse({"error": "Неверный токен"}, status=401)
-
-    data = request.data
-    old_name = data.get("old_name")
-    new_name = data.get("new_name")
+        # Получаем данные из тела запроса (если они переданы в JSON)
+        data = json.loads(request.body)
+        old_name = data.get("old_name")
+        new_name = data.get("new_name")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Ошибка парсинга данных"}, status=400)
 
     if not old_name or not new_name:
         return JsonResponse({"error": "Укажите старое и новое имя файла"}, status=400)
@@ -167,21 +148,13 @@ def rename_file(request):
     return JsonResponse({"message": "Файл переименован", "new_name": new_name})
 
 @csrf_exempt
-@api_view(["PATCH"])
+@login_required
 def update_comment(request, filename):
     """Эндпоинт для обновления комментария к файлу"""
     if request.method != "PATCH":
         return JsonResponse({"error": "Метод не поддерживается"}, status=405)
     
-    token_key = request.headers.get("Authorization")
-    if not token_key or not token_key.startswith("Token "):
-        return JsonResponse({"error": "Требуется аутентификация"}, status=401)
-    
-    try:
-        token = Token.objects.get(key=token_key.split(" ")[1])
-        user = token.user
-    except Token.DoesNotExist:
-        return JsonResponse({"error": "Неверный токен"}, status=401)
+    user = request.user
     
     file = get_object_or_404(File, file="uploads/" + filename, owner=user)
     
@@ -201,21 +174,13 @@ def update_comment(request, filename):
 
 
 @csrf_exempt
-@api_view(["POST"])
+@login_required
 def generate_external_link(request, filename):
     """Эндпоинт для генерации специальной ссылки на файл"""
     if request.method != "POST":
         return JsonResponse({"error": "Метод не поддерживается"}, status=405)
     
-    token_key = request.headers.get("Authorization")
-    if not token_key or not token_key.startswith("Token "):
-        return JsonResponse({"error": "Требуется аутентификация"}, status=401)
-    
-    try:
-        token = Token.objects.get(key=token_key.split(" ")[1])
-        user = token.user
-    except Token.DoesNotExist:
-        return JsonResponse({"error": "Неверный токен"}, status=401)
+    user = request.user
     
     file = get_object_or_404(File, file="uploads/" + filename, owner=user)
     
@@ -227,6 +192,8 @@ def generate_external_link(request, filename):
 @csrf_exempt
 def download_via_external_link(request, external_link):
     """Эндпоинт для скачивания файла по специальной ссылке"""
+    if request.method != "GET":
+        return JsonResponse({"error": "Метод не поддерживается"}, status=405)
     file = get_object_or_404(File, external_link=external_link)
     file_path = os.path.join(settings.MEDIA_ROOT, file.file.name)
     
