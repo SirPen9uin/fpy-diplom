@@ -148,6 +148,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400  # 1 день
 SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True  # Добавлено для кросс-доменных запросов
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Настройки CORS
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",

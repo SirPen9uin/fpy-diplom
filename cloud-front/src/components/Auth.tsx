@@ -1,58 +1,47 @@
-import { useState } from "react";
-import { getCsrfToken, register, login, logout } from "../api";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { loginUser } from "../store/authSlice";
+import { useNavigate } from "react-router-dom";
 
-interface AuthProps {
-    onLogin: () => void;
-}
-
-export default function Auth({ onLogin }: AuthProps) {
+const Auth: React.FC = () => {
     const [email, setEmail] = useState("");
-    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [message, setMessage] = useState("");
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    async function handleRegister() {
-        await getCsrfToken();
-        const res = await register(email, password, username);
-        setMessage(res.detail);
-    }
+    const handleLogin = async (event: React.FormEvent) => {
+        event.preventDefault();
 
-    async function handleLogin() {
-        await getCsrfToken();
-        const res = await login(email, password);
-        setMessage(res.detail);
+        try {
+            const response = await fetch("http://127.0.0.1:8000/auth/login/", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
 
-        if (res.detail === "Login successful") {
-            console.log("Login successful");  // Логируем успешный вход
-            onLogin();  // Вызовем родительскую функцию для обновления состояния
+            if (!response.ok) {
+                throw new Error("Ошибка авторизации");
+            }
+
+            const data = await response.json();
+            dispatch(loginUser({ user: { username: data.username }, token: "" })); // Храним только username
+            navigate("/dashboard"); // Перенаправляем на личный кабинет
+        } catch (error) {
+            console.error("Ошибка входа:", error);
         }
-    }
-
-    async function handleLogout() {
-        const res = await logout();
-        setMessage(res.detail);
-    }
+    };
 
     return (
         <div>
-            <h2>Auth</h2>
-            <input
-                placeholder="email"
-                onChange={(e) => setEmail(e.target.value)}
-            />
-            {/* <input
-                placeholder="username"
-                onChange={(e) => setUsername(e.target.value)}
-            /> */}
-            <input
-                type="password"
-                placeholder="Password"
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <button onClick={handleRegister}>Register</button>
-            <button onClick={handleLogin}>Login</button>
-            <button onClick={handleLogout}>Logout</button>
-            <p>{message}</p>
+            <h2>Вход</h2>
+            <form onSubmit={handleLogin}>
+                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <input type="password" placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <button type="submit">Войти</button>
+            </form>
         </div>
     );
-}
+};
+
+export default Auth;

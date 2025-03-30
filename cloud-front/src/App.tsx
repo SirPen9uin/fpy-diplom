@@ -1,38 +1,24 @@
-// src/App.tsx
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
-import Auth from './components/Auth';  // Компонент для авторизации
+import React from "react";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "./store/store";
+import Dashboard from "./pages/Dashboard";
+import Auth from "./components/Auth";
+import Home from "./pages/Home";
+import Register from "./pages/Register";
+import Navbar from "./components/Navbar"; // Добавляем Navbar
 
 const App: React.FC = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
-    const handleLogin = () => {
-        console.log("handleLogin called");
-        setIsAuthenticated(true);
-    };
-
-    useEffect(() => {
-        if (isAuthenticated) {
-            console.log("Redirecting to dashboard...");
-        }
-    }, [isAuthenticated]);
+    const isAuthenticated = useSelector((state: RootState) => state.auth.user !== null);
 
     return (
         <Router>
-            <nav>
-                <Link to="/">Главная</Link>
-                <Link to="/login">Войти</Link>
-                {isAuthenticated && <Link to="/dashboard">Личный кабинет</Link>}
-            </nav>
-
+            <Navbar /> {/* Используем Navbar вместо ссылок в App */}
             <Routes>
-                <Route path="/" element={<h1>Главная страница</h1>} />
-                <Route path="/login" element={<Auth onLogin={handleLogin} />} />
-                <Route
-                    path="/dashboard"
-                    element={isAuthenticated ? <Dashboard /> : <Navigate to="/dashboard" />}
-                />
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Auth />} />
+                <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
+                <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/dashboard" />} />
             </Routes>
         </Router>
     );

@@ -35,18 +35,8 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout() {
-    const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-    const response = await fetch("http://127.0.0.1:8000/auth/logout/", {
+    await fetch(`${API_URL}logout/`, {
         method: "POST",
         credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken || "",
-        },
     });
-    return response.json();
 }

@@ -2,7 +2,7 @@ import json
 import os
 
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 
 from django.http import JsonResponse
@@ -69,3 +69,12 @@ def login_view(request):
 @ensure_csrf_cookie
 def csrf_token(request):
     return JsonResponse({'detail': 'CSRF cookie set'})
+
+@csrf_exempt
+def logout_view(request):
+    if request.method == "POST":
+        logout(request)
+        response = JsonResponse({"detail": "Logout successful"})
+        response.delete_cookie("sessionid")  # Удаляем куки сессии
+        return response
+    return JsonResponse({"detail": "Method not allowed"}, status=405)
