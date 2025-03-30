@@ -65,7 +65,6 @@ def list_files(request):
         }
         for file in files
     ]
-    
     return JsonResponse({"files": file_list}, status=200)
 
 @csrf_exempt

@@ -1,4 +1,3 @@
-// src/components/Auth.tsx
 import { useState } from "react";
 import { getCsrfToken, register, login, logout } from "../api";
 
@@ -41,10 +40,10 @@ export default function Auth({ onLogin }: AuthProps) {
                 placeholder="email"
                 onChange={(e) => setEmail(e.target.value)}
             />
-            <input
+            {/* <input
                 placeholder="username"
                 onChange={(e) => setUsername(e.target.value)}
-            />
+            /> */}
             <input
                 type="password"
                 placeholder="Password"
