@@ -25,8 +25,9 @@ const Auth: React.FC = () => {
             }
 
             const data = await response.json();
-            dispatch(loginUser({ user: { username: data.username }, token: "" })); // Храним только username
-            navigate("/dashboard"); // Перенаправляем на личный кабинет
+            console.log("Данные при логине:", data);
+            dispatch(loginUser({ user: { username: data.username, email: data.email }}));
+            navigate("/dashboard");
         } catch (error) {
             console.error("Ошибка входа:", error);
         }

@@ -145,10 +145,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "cloud_back", "media")
 
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 86400  # 1 день
+SESSION_COOKIE_AGE = 86400
 SESSION_COOKIE_SAMESITE = "None"
-SESSION_COOKIE_SECURE = True  # Добавлено для кросс-доменных запросов
+SESSION_COOKIE_SECURE = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
 # Настройки CORS
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -161,5 +162,5 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
-CSRF_COOKIE_SAMESITE = "None"  # Разрешить кросс-сайт куки
-CSRF_COOKIE_SECURE = True  # Для работы с HTTPS (если локально работает через HTTP, установи False)
+CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True

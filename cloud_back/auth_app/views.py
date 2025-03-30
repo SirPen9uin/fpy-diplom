@@ -1,23 +1,11 @@
 import json
-import os
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, get_user_model, login, logout
-from django.contrib.auth.decorators import login_required
-
 from django.http import JsonResponse
 
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.views.decorators.http import require_POST, require_GET
-
-from django.core.files.storage import default_storage
-
-from django.conf import settings
-
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from rest_framework.views import APIView
+from django.views.decorators.http import require_POST
 
 
 @csrf_exempt
@@ -44,7 +32,6 @@ User = get_user_model()
 def login_view(request):
     try:
         data = json.loads(request.body)
-        print("Полученные данные:", data)  # Логируем входные данные
 
         user = User.objects.filter(email=data['email']).first()
         if not user:
@@ -59,7 +46,10 @@ def login_view(request):
             return JsonResponse({'detail': 'Invalid credentials'}, status=400)
 
         login(request, user)
-        return JsonResponse({'detail': 'Login successful'})
+        return JsonResponse({'detail': 'Login successful',
+                             'username': user.username,
+                             'email': user.email,
+                             'id': user.id})
 
     except Exception as e:
         print("Ошибка:", e)
@@ -68,13 +58,17 @@ def login_view(request):
 @csrf_exempt
 @ensure_csrf_cookie
 def csrf_token(request):
+    
     return JsonResponse({'detail': 'CSRF cookie set'})
 
 @csrf_exempt
+@require_POST
 def logout_view(request):
-    if request.method == "POST":
+    try:
         logout(request)
         response = JsonResponse({"detail": "Logout successful"})
-        response.delete_cookie("sessionid")  # Удаляем куки сессии
+        response.delete_cookie("sessionid")
         return response
-    return JsonResponse({"detail": "Method not allowed"}, status=405)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    

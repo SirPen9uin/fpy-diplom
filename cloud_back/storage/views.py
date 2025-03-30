@@ -5,19 +5,13 @@ import uuid
 from django.http import JsonResponse, FileResponse
 
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
 
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
+from django.contrib.auth.decorators import login_required
 
 from django.conf import settings
 
 from django.shortcuts import get_object_or_404
 
-from rest_framework.decorators import api_view
-from rest_framework.authtoken.models import Token
-
-from .serializers import FileSerializer
 from .models import File
 
 UPLOAD_DIR = os.path.join(settings.MEDIA_ROOT, "uploads")
@@ -37,7 +31,7 @@ def upload_file(request):
     
     comment = request.POST.get("comment", "")
     
-    file_instance = File.objects.create(file=file, owner=request.user, comment=comment)
+    file_instance = File.objects.create(file=file, owner=user, comment=comment)
     
     return JsonResponse({
         "message": "Файл загружен",
@@ -75,7 +69,6 @@ def download_file(request, filename):
         return JsonResponse({"error": "Метод не поддерживается"}, status=405)
     user = request.user
 
-    # Ищем файл в базе
     try:
         file_instance = File.objects.get(file=f"uploads/{filename}", owner=user)
     except File.DoesNotExist:
@@ -93,7 +86,6 @@ def delete_file(request, filename):
     """Эндпоинт для удаления файла"""
     user = request.user
 
-    # Проверяем файл в базе
     try:
         file_instance = File.objects.get(file=f"uploads/{filename}", owner=user)
     except File.DoesNotExist:
@@ -116,7 +108,6 @@ def rename_file(request):
     user = request.user
 
     try:
-        # Получаем данные из тела запроса (если они переданы в JSON)
         data = json.loads(request.body)
         old_name = data.get("old_name")
         new_name = data.get("new_name")
@@ -126,7 +117,6 @@ def rename_file(request):
     if not old_name or not new_name:
         return JsonResponse({"error": "Укажите старое и новое имя файла"}, status=400)
 
-    # Проверяем файл в базе
     try:
         file_instance = File.objects.get(file=f"uploads/{old_name}", owner=user)
     except File.DoesNotExist:
@@ -137,10 +127,8 @@ def rename_file(request):
     if os.path.exists(new_path):
         return JsonResponse({"error": "Файл с таким именем уже существует"}, status=400)
 
-    # Переименовываем файл
     os.rename(file_instance.file.path, new_path)
-    
-    # Обновляем запись в базе
+
     file_instance.file.name = f"uploads/{new_name}"
     file_instance.save()
 

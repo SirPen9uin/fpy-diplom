@@ -6,11 +6,11 @@ import { logout } from "../api";
 
 const Navbar = () => {
   const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.auth.user); // Получаем пользователя из Redux
+  const user = useSelector((state: RootState) => state.auth.user); 
 
   const handleLogout = async () => {
     await logout();
-    dispatch(logoutUser()); // Удаляет данные из store и localStorage
+    dispatch(logoutUser());
 };
 
   return (

@@ -4,7 +4,6 @@ interface AuthState {
   user: { username: string } | null;
 }
 
-// Безопасное чтение пользователя из localStorage
 const getStoredUser = () => {
   const user = localStorage.getItem("user");
   try {
