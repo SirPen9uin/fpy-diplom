@@ -5,16 +5,15 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
 
-from django.http import JsonResponse, FileResponse
+from django.http import JsonResponse
 
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.decorators.http import require_POST, require_GET
 
 from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 
 from django.conf import settings
 
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -22,6 +21,7 @@ from rest_framework.views import APIView
 
 
 @csrf_exempt
+@require_POST
 def register(request):
     if request.method == "POST":
         try:
@@ -40,50 +40,32 @@ def register(request):
 User = get_user_model()
 
 @csrf_exempt
+@require_POST
 def login_view(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            email = data.get("email")
-            password = data.get("password")
+    try:
+        data = json.loads(request.body)
+        print("Полученные данные:", data)  # Логируем входные данные
 
-            if not email or not password:
-                return JsonResponse({"error": "Укажите email и пароль"}, status=400)
+        user = User.objects.filter(email=data['email']).first()
+        if not user:
+            print("Пользователь не найден")
+            return JsonResponse({'detail': 'Invalid credentials'}, status=400)
 
-            try:
-                user = User.objects.get(email=email)
-            except User.DoesNotExist:
-                return JsonResponse({"error": "Пользователь не найден"}, status=400)
+        print(f"Найден пользователь: {user.username}")
 
-            user = authenticate(request, username=user.username, password=password)
-            if user is None:
-                return JsonResponse({"error": "Неверный пароль"}, status=400)
+        user = authenticate(username=user.username, password=data['password'])
+        if not user:
+            print("Ошибка аутентификации: неверный пароль")
+            return JsonResponse({'detail': 'Invalid credentials'}, status=400)
 
-            login(request, user)
-            
-            return JsonResponse({"message": "Успешный вход", "user": {"username": user.username}})
+        login(request, user)
+        return JsonResponse({'detail': 'Login successful'})
 
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        print("Ошибка:", e)
+        return JsonResponse({'detail': 'Server error'}, status=500)
 
-    return JsonResponse({"error": "Метод не поддерживается"}, status=405)
-
-class ProtectedView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        return Response({"message": "Доступ разрешен!", "user": request.user.username})
-        
-
-@api_view(['POST'])
-def get_token(request):
-    """Эндпоинт для получения токена"""
-    username = request.data.get("username")
-    password = request.data.get("password")
-
-    user = authenticate(username=username, password=password)
-    if user is None:
-        return Response({"error": "Неверные учетные данные"}, status=400)
-
-    token, created = Token.objects.get_or_create(user=user)
-    return Response({"token": token.key})
+@csrf_exempt
+@ensure_csrf_cookie
+def csrf_token(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})
