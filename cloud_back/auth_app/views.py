@@ -7,6 +7,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 
+from django.middleware.csrf import get_token
+
 
 @csrf_exempt
 @require_POST
@@ -44,22 +46,23 @@ def login_view(request):
         if not user:
             print("Ошибка аутентификации: неверный пароль")
             return JsonResponse({'detail': 'Invalid credentials'}, status=400)
+    
 
         login(request, user)
         return JsonResponse({'detail': 'Login successful',
                              'username': user.username,
                              'email': user.email,
-                             'id': user.id})
+                             'id': user.id},)
 
     except Exception as e:
         print("Ошибка:", e)
         return JsonResponse({'detail': 'Server error'}, status=500)
 
 @csrf_exempt
-@ensure_csrf_cookie
+# @ensure_csrf_cookie
 def csrf_token(request):
-    
-    return JsonResponse({'detail': 'CSRF cookie set'})
+    csrf_token = get_token(request)  # Получаем CSRF токен
+    return JsonResponse({'csrfToken': csrf_token})  # Отправляем токен в ответе
 
 @csrf_exempt
 @require_POST

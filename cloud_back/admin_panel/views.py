@@ -63,10 +63,12 @@ def update_admin_status(request, user_id):
     
     return JsonResponse({"message": "Статус администратора обновлён", "is_admin": user.is_staff})
 
+@csrf_exempt
 @api_view(["DELETE"])
 @permission_classes([IsAdminUser])
 def delete_user(request, user_id):
     """Удаление пользователя и его файлов"""
+    print(request.user, request.user.is_authenticated, request.user.is_superuser)
 
     user = get_object_or_404(User, id=user_id)
 

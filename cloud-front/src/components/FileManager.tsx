@@ -19,7 +19,7 @@ const FileManager: React.FC = () => {
   
                   const data = await response.json();
                   setFiles(data.files);
-              } catch (err: any) {
+              } catch (err) {
                   setError(err.message);
               } finally {
                   setLoading(false);
@@ -81,32 +81,6 @@ const FileManager: React.FC = () => {
           } catch (error) {
               console.error("Ошибка при скачивании файла:", error);
           }    
-  
-      const downloadFile = async (fileName: string) => {
-          try {
-              const response = await fetch(`http://127.0.0.1:8000/storage/files/${fileName}/`, {
-                  method: "GET",
-                  credentials: "include",
-              });
-      
-              if (!response.ok) {
-                  throw new Error("Ошибка при загрузке файла");
-              }
-      
-              const blob = await response.blob();
-              const url = window.URL.createObjectURL(blob);
-              const link = document.createElement("a");
-      
-              link.href = url;
-              link.download = fileName;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              window.URL.revokeObjectURL(url);
-          } catch (error) {
-              console.error("Ошибка загрузки файла:", error);
-          }
-      };
   
         };
         const copyToClipboard = async (text: string) => {

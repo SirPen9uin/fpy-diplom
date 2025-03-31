@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
 import Header from "./components/Header";
+import AdminPanel from "./components/AdminPanel";
 
 const App: React.FC = () => {
     const isAuthenticated = useSelector((state: RootState) => state.auth.user !== null);
@@ -21,6 +22,7 @@ const App: React.FC = () => {
                 <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Auth />} />
                 <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
                 <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/dashboard" />} />
+                <Route path="/admin" element={<AdminPanel />} />
             </Routes>
         </Router>
     );
