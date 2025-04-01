@@ -33,6 +33,7 @@ dist
 dist-ssr
 *.local
 
+/cloud_back/cloud_back/media
 
 # Editor directories and files
 .vscode/*
