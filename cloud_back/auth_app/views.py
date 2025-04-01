@@ -40,8 +40,6 @@ def login_view(request):
             print("Пользователь не найден")
             return JsonResponse({'detail': 'Invalid credentials'}, status=400)
 
-        print(f"Найден пользователь: {user.username}")
-
         user = authenticate(username=user.username, password=data['password'])
         if not user:
             print("Ошибка аутентификации: неверный пароль")
@@ -52,7 +50,8 @@ def login_view(request):
         return JsonResponse({'detail': 'Login successful',
                              'username': user.username,
                              'email': user.email,
-                             'id': user.id},)
+                             'id': user.id,
+                             'is_admin': user.is_staff},)
 
     except Exception as e:
         print("Ошибка:", e)

@@ -25,8 +25,7 @@ const Auth: React.FC = () => {
             }
 
             const data = await response.json();
-            console.log("Данные при логине:", data);
-            dispatch(loginUser({ user: { username: data.username, email: data.email }}));
+            dispatch(loginUser({ user: { username: data.username, email: data.email, is_admin: data.is_admin } }));
             navigate("/dashboard");
         } catch (error) {
             console.error("Ошибка входа:", error);

@@ -1,7 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  is_admin: boolean;
+}
+
 interface AuthState {
-  user: { username: string } | null;
+  user: User | null;
 }
 
 const getStoredUser = () => {
@@ -22,8 +29,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    loginUser: (state, action: PayloadAction<{ user: { username: string } }>) => {
-      console.log("Данные при логине:", action.payload);
+    loginUser: (state, action: PayloadAction<{ user: User }>) => {
 
       if (!action.payload.user) {
         console.error("Ошибка: user отсутствует в payload");

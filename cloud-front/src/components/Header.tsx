@@ -4,8 +4,9 @@ function Header() {
   return (
     <header style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
       <nav>
-        <Link to="/">Главная</Link> | <Link to="/login">Войти</Link> | <Link to="/dashboard">Хранилище</Link>
+        <Link to="/">Home</Link>
       </nav>
+      <h1>Cloud Storage</h1>
     </header>
   );
 }

@@ -39,13 +39,11 @@ def user_list(request):
 @permission_classes([IsAdminUser])
 def update_admin_status(request, user_id):
     """Изменение статуса администратора у пользователя (только для суперпользователя)"""
-    # Проверяем, является ли текущий пользователь суперпользователем
     if not request.user.is_superuser:
         return JsonResponse({"error": "Только суперпользователь может назначать администраторов"}, status=403)
 
     user = get_object_or_404(User, id=user_id)
 
-    # Нельзя изменить статус суперпользователя
     if user.is_superuser:
         return JsonResponse({"error": "Нельзя изменить статус суперпользователя"}, status=403)
 
@@ -68,19 +66,16 @@ def update_admin_status(request, user_id):
 @permission_classes([IsAdminUser])
 def delete_user(request, user_id):
     """Удаление пользователя и его файлов"""
-    print(request.user, request.user.is_authenticated, request.user.is_superuser)
 
     user = get_object_or_404(User, id=user_id)
 
-    # Нельзя удалить суперпользователя
     if user.is_superuser:
         return JsonResponse({"error": "Нельзя удалить суперпользователя"}, status=403)
 
-    # Удаляем все файлы пользователя перед удалением
     files = File.objects.filter(owner=user)
     for file in files:
-        file.file.delete()  # Физически удаляем файл с сервера
-        file.delete()  # Удаляем запись из БД
+        file.file.delete()
+        file.delete()
 
     user.delete()
     return JsonResponse({"message": "Пользователь и его файлы удалены"}, status=200)
