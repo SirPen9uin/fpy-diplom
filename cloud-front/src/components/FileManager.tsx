@@ -9,7 +9,7 @@ const FileManager: React.FC = () => {
       useEffect(() => {
           async function fetchFiles() {
               try {
-                  const response = await fetch('http://127.0.0.1:8000/storage/files/', {
+                  const response = await fetch(`${API_BASE_URL}/storage/files/`, {
                       credentials: 'include',
                   });
   

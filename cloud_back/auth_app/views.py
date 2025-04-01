@@ -64,14 +64,17 @@ def csrf_token(request):
     csrf_token = get_token(request)  # Получаем CSRF токен
     return JsonResponse({'csrfToken': csrf_token})  # Отправляем токен в ответе
 
-@csrf_exempt
+
 @require_POST
 def logout_view(request):
-    try:
-        logout(request)
-        response = JsonResponse({"detail": "Logout successful"})
-        response.delete_cookie("sessionid")
-        return response
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Пользователь не аутентифицирован"}, status=400)
+
+    logout(request)
+    response = JsonResponse({"detail": "Logout successful"})
+
+    response.delete_cookie("sessionid")
+    response.delete_cookie("csrftoken")
+
+    return response
     

@@ -39,7 +39,7 @@ const AdminPanel = () => {
       return;
     }
   
-    await fetch(`${API_BASE_URL}/admin_panel/users/${userId}/`, {
+    await fetch(`${API_BASE_URL}/admin_panel/users/${userId}/admin/`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

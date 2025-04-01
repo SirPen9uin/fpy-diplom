@@ -2,16 +2,14 @@ import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store/store";
 import { logoutUser } from "../store/authSlice";
-import { logout } from "../api";
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user); 
 
   const handleLogout = async () => {
-    await logout();
-    dispatch(logoutUser());
-};
+    await dispatch(logoutUser());
+  };
 
   return (
     <nav className="bg-blue-600 p-4 text-white flex justify-between">
