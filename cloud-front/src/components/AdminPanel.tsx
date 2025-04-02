@@ -7,19 +7,21 @@ interface User {
   username: string;
   email: string;
   is_admin: boolean;
-  file_count: number;
-  total_size: number;
 }
 
 interface File {
+  id: number;
   name: string;
   size: number;
+  comment: string;
 }
 
 const AdminPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userFiles, setUserFiles] = useState<File[]>([]);
+  const [fileModalOpen, setFileModalOpen] = useState(false);
+  const [renameInputs, setRenameInputs] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/admin_panel/users/`, { credentials: "include" })
@@ -28,63 +30,85 @@ const AdminPanel = () => {
       .catch((err) => console.error("Ошибка загрузки пользователей:", err));
   }, []);
 
-  const handleToggleAdmin = async (userId: number, isAdmin: boolean) => {
-    const csrfToken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("csrftoken="))
-      ?.split("=")[1];
-  
-    if (!csrfToken) {
-      console.error("CSRF-токен не найден в куках!");
-      return;
-    }
-  
-    await fetch(`${API_BASE_URL}/admin_panel/users/${userId}/admin/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,  // Передаём токен
-      },
-      credentials: "include",
-      body: JSON.stringify({ is_admin: !isAdmin }),
-    });
-  
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId ? { ...user, is_admin: !isAdmin } : user
-      )
-    );
-  };
-
-  const handleDeleteUser = async (userId: number) => {
-    const csrfToken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("csrftoken="))
-      ?.split("=")[1];
-  
-    if (!csrfToken) {
-      console.error("CSRF-токен не найден в куках!");
-      return;
-    }
-  
-    await fetch(`${API_BASE_URL}/admin_panel/users/${userId}/delete/`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,  // Передаём токен
-      },
-      credentials: "include",
-    });
-  
-    setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-  };
-
-  const handleViewFiles = async (user: User) => {
+  const fetchUserFiles = async (user: User) => {
     setSelectedUser(user);
-    fetch(`${API_BASE_URL}/admin_panel/users/${user.id}/storage/`, { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setUserFiles(data.files))
-      .catch((err) => console.error("Ошибка загрузки файлов пользователя:", err));
+    setFileModalOpen(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin_panel/users/${user.id}/storage/`, { credentials: "include" });
+      const data = await res.json();
+      setUserFiles(data.files);
+      setRenameInputs(data.files.reduce((acc: any, file: File) => ({ ...acc, [file.id]: file.name }), {}));
+    } catch (err) {
+      console.error("Ошибка загрузки файлов пользователя:", err);
+    }
+  };
+
+  const handleRenameChange = (fileId: number, newName: string) => {
+    setRenameInputs((prev) => ({ ...prev, [fileId]: newName }));
+  };
+
+  const handleRenameFile = async (fileId: number) => {
+    if (!selectedUser) return;
+    const newName = renameInputs[fileId]?.trim();
+    if (!fileId || !newName) return;
+
+    try {
+      await fetch(`${API_BASE_URL}/admin_panel/users/${selectedUser.id}/storage/${fileId}/rename/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ name: newName }),
+      });
+
+      setUserFiles((prevFiles) =>
+        prevFiles.map((file) =>
+          file.id === fileId ? { ...file, name: newName } : file
+        )
+      );
+    } catch (err) {
+      console.error("Ошибка переименования файла:", err);
+    }
+  };
+
+  const handleUpdateComment = async (fileId: number, newComment: string) => {
+    if (!selectedUser) return;
+
+    try {
+      await fetch(`${API_BASE_URL}/admin_panel/users/${selectedUser.id}/storage/${fileId}/comment/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ new_comment: newComment }),
+      });
+
+      setUserFiles((prevFiles) =>
+        prevFiles.map((file) =>
+          file.id === fileId ? { ...file, comment: newComment } : file
+        )
+      );
+    } catch (err) {
+      console.error("Ошибка обновления комментария:", err);
+    }
+  };
+
+  const handleDeleteFile = async (fileId: number) => {
+    if (!selectedUser) return;
+
+    try {
+      await fetch(`${API_BASE_URL}/admin_panel/users/${selectedUser.id}/storage/${fileId}/delete/`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      setUserFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+    } catch (err) {
+      console.error("Ошибка удаления файла:", err);
+    }
   };
 
   return (
@@ -96,8 +120,6 @@ const AdminPanel = () => {
             <th>ID</th>
             <th>Имя пользователя</th>
             <th>Email</th>
-            <th>Админ</th>
-            <th>Файлы</th>
             <th>Действия</th>
           </tr>
         </thead>
@@ -108,33 +130,37 @@ const AdminPanel = () => {
               <td>{user.username}</td>
               <td>{user.email}</td>
               <td>
-                <button onClick={() => handleToggleAdmin(user.id, user.is_admin)}>
-                  {user.is_admin ? "Убрать админку" : "Сделать админом"}
-                </button>
-              </td>
-              <td>
-                <button onClick={() => handleViewFiles(user)}>Просмотр</button>
-              </td>
-              <td>
-                <button onClick={() => handleDeleteUser(user.id)}>Удалить</button>
+                <button onClick={() => fetchUserFiles(user)}>Управление файлами</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {selectedUser && (
-        <div>
+      {fileModalOpen && selectedUser && (
+        <div className="modal">
           <h2>Файлы пользователя {selectedUser.username}</h2>
           <ul>
-            {userFiles.length > 0 ? (
-              userFiles.map((file, index) => (
-                <li key={index}>{file.name} - {file.size} байт</li>
-              ))
-            ) : (
-              <p>Файлов нет</p>
-            )}
+            {userFiles.map((file) => (
+              console.log(file),
+              <li key={file.id}>
+                <input
+                  type="text"
+                  value={renameInputs[file.id].split("/").pop() || ""}
+                  onChange={(e) => handleRenameChange(file.id, e.target.value)}
+                />
+                <button onClick={() => handleRenameFile(file.id)}>Сохранить</button>
+                <input
+                  type="text"
+                  value={file.comment || ""}
+                  placeholder="Комментарий"
+                  onChange={(e) => handleUpdateComment(file.id, e.target.value)}
+                />
+                <button onClick={() => handleDeleteFile(file.id)}>Удалить</button>
+              </li>
+            ))}
           </ul>
+          <button onClick={() => setFileModalOpen(false)}>Закрыть</button>
         </div>
       )}
     </div>

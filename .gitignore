@@ -33,6 +33,8 @@ dist
 dist-ssr
 *.local
 
+/checklist.md
+
 /cloud_back/cloud_back/media
 
 # Editor directories and files

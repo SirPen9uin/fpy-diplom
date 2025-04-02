@@ -111,6 +111,7 @@ def rename_file(request):
         data = json.loads(request.body)
         old_name = data.get("old_name")
         new_name = data.get("new_name")
+        print(old_name, new_name)
     except json.JSONDecodeError:
         return JsonResponse({"error": "Ошибка парсинга данных"}, status=400)
 

@@ -1,9 +1,17 @@
+import os
+from django.conf import settings
 from django.http import JsonResponse
 from django.contrib.auth.models import User
+from django.contrib.admin.views.decorators import staff_member_required
+
 from django.shortcuts import get_object_or_404
+
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
+
 import json
 
 from storage.models import File
@@ -87,7 +95,7 @@ def user_storage_info(request, user_id):
     user = get_object_or_404(User, id=user_id)
     files = File.objects.filter(owner=user)
     
-    file_info = [{"name": file.file.name, "size": file.file.size} for file in files]
+    file_info = [{"name": file.file.name, "size": file.file.size, "comment": file.comment, "id": file.id} for file in files]
     total_size = sum(file["size"] for file in file_info)
 
     return JsonResponse({
@@ -96,3 +104,69 @@ def user_storage_info(request, user_id):
         "total_size": total_size,
         "files": file_info,
     }, status=200)
+
+
+@staff_member_required
+@csrf_exempt
+@require_http_methods(["PATCH"])
+def rename_file(request, user_id, file_id):
+    try:
+        data = json.loads(request.body)
+        new_name = data.get("name")
+        if not new_name:
+            return JsonResponse({"error": "Новое имя не указано"}, status=400)
+
+        file_instance = File.objects.get(id=file_id, owner_id=user_id)
+        old_path = file_instance.file.path
+        new_path = os.path.join(settings.MEDIA_ROOT, "uploads", new_name)
+
+        if os.path.exists(new_path):
+            return JsonResponse({"error": "Файл с таким именем уже существует"}, status=400)
+
+        os.rename(old_path, new_path)
+
+        file_instance.file.name = f"uploads/{new_name}"
+        file_instance.name = new_name
+        file_instance.save()
+
+        return JsonResponse({"detail": "Файл переименован", "new_name": new_name})
+    except File.DoesNotExist:
+        print(f"Файл не найден: old_name={old_path}, new_name={new_name}")
+        return JsonResponse({"error": "Файл не найден"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+@staff_member_required
+@csrf_exempt
+@require_http_methods(["PATCH"])
+def update_file_comment(request, user_id, file_id):
+    try:
+        data = json.loads(request.body)
+        new_comment = data.get("new_comment")
+        if new_comment is None:
+            return JsonResponse({"error": "Комментарий не указан"}, status=400)
+
+        file = File.objects.get(id=file_id, owner_id=user_id)
+        file.comment = new_comment
+        file.save()
+
+        return JsonResponse({"detail": "Комментарий обновлен"})
+    except File.DoesNotExist:
+        return JsonResponse({"error": "Файл не найден"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    
+
+@staff_member_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_file_admin(request, user_id, file_id):
+    try:
+        file = File.objects.get(id=file_id, owner_id=user_id)
+        file.delete()
+        
+        return JsonResponse({"detail": "Файл удален"})
+    except File.DoesNotExist:
+        return JsonResponse({"error": "Файл не найден"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)

@@ -66,3 +66,72 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+table {
+  border: #646cff solid 1px;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 20px;
+}
+
+thead {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+thead th {
+  padding: 10px;
+  text-align: center;
+  border: #646cff solid 1px;
+}
+
+tbody td {
+  padding: 10px;
+  text-align: center;
+  border: #646cff solid 1px;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal h2 {
+  margin-bottom: 15px;
+}
+
+.modal ul {
+  list-style: none;
+  padding: 0;
+}
+
+.modal li {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.modal input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.modal button {
+  padding: 5px 10px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal button:hover {
+  background-color: darkred;
+}
