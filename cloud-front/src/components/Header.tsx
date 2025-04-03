@@ -1,12 +1,11 @@
-import { Link } from "react-router-dom";
-
+import logo from '../assets/ByteHaven.png';
 function Header() {
   return (
     <header style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
-      <nav>
-        <Link to="/">Home</Link>
-      </nav>
-      <h1>Cloud Storage</h1>
+      <div className='header-flex'>
+        <h1>ByteHaven</h1>
+        <img src={logo} alt="ByteHaven Logo" />
+      </div>
     </header>
   );
 }

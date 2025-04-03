@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
 import Header from "./components/Header";
 import AdminPanel from "./components/AdminPanel";
+import Footer from "./components/Footer";
 
 const App: React.FC = () => {
     const isAuthenticated = useSelector((state: RootState) => state.auth.user !== null);
@@ -24,6 +25,7 @@ const App: React.FC = () => {
                 <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/dashboard" />} />
                 <Route path="/admin" element={<AdminPanel />} />
             </Routes>
+            <Footer />
         </Router>
     );
 };

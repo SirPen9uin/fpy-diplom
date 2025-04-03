@@ -111,6 +111,58 @@ const AdminPanel = () => {
     }
   };
 
+  const handleToggleAdmin = async (userId: number, isAdmin: boolean) => {
+    const csrfToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("csrftoken="))
+      ?.split("=")[1];
+  
+    if (!csrfToken) {
+      console.error("CSRF-токен не найден в куках!");
+      return;
+    }
+  
+    await fetch(`${API_BASE_URL}/admin_panel/users/${userId}/admin/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,  // Передаём токен
+      },
+      credentials: "include",
+      body: JSON.stringify({ is_admin: !isAdmin }),
+    });
+  
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === userId ? { ...user, is_admin: !isAdmin } : user
+      )
+    );
+  };
+
+  const handleDeleteUser = async (userId: number) => {
+    const csrfToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("csrftoken="))
+      ?.split("=")[1];
+  
+    if (!csrfToken) {
+      console.error("CSRF-токен не найден в куках!");
+      return;
+    }
+  
+    await fetch(`${API_BASE_URL}/admin_panel/users/${userId}/delete/`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,  // Передаём токен
+      },
+      credentials: "include",
+    });
+  
+    setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+  };
+
+
   return (
     <div>
       <h1>Панель администратора</h1>
@@ -120,7 +172,10 @@ const AdminPanel = () => {
             <th>ID</th>
             <th>Имя пользователя</th>
             <th>Email</th>
-            <th>Действия</th>
+            <th>Имя</th>
+            <th>Фамилия</th>
+            <th colSpan={2}>Хранилище пользователя</th>
+            <th colSpan={2}>Действия с пользователями</th>
           </tr>
         </thead>
         <tbody>
@@ -129,8 +184,19 @@ const AdminPanel = () => {
               <td>{user.id}</td>
               <td>{user.username}</td>
               <td>{user.email}</td>
+              <td>{user.first_name}</td>
+              <td>{user.last_name}</td>
+              <td>Всего файлов: {user.file_count}. Общий размер файлов: {user.total_size} Кб</td>
               <td>
                 <button onClick={() => fetchUserFiles(user)}>Управление файлами</button>
+              </td>
+              <td>
+              <button onClick={() => handleDeleteUser(user.id)}>Удалить пользователя</button>
+              </td>
+              <td>
+                <button onClick={() => handleToggleAdmin(user.id, user.is_admin)}>
+                  {user.is_admin ? "Убрать админку" : "Сделать админом"}
+                </button>
               </td>
             </tr>
           ))}
@@ -140,10 +206,14 @@ const AdminPanel = () => {
       {fileModalOpen && selectedUser && (
         <div className="modal">
           <h2>Файлы пользователя {selectedUser.username}</h2>
+          <h3>Количество файлов: {userFiles.length}</h3>
+          <h3>Общий размер файлов: {userFiles.reduce((acc, file) => acc + file.size, 0)}</h3>
           <ul>
             {userFiles.map((file) => (
               console.log(file),
               <li key={file.id}>
+                <span>{file.id}</span>
+                <span>{file.uploadedAt}</span>
                 <input
                   type="text"
                   value={renameInputs[file.id].split("/").pop() || ""}

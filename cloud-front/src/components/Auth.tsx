@@ -33,13 +33,15 @@ const Auth: React.FC = () => {
     };
 
     return (
-        <div>
-            <h2>Вход</h2>
-            <form onSubmit={handleLogin}>
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                <input type="password" placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                <button type="submit">Войти</button>
-            </form>
+        <div className="container">
+            <div className="auth-container">
+                <h2>Вход</h2>
+                <form onSubmit={handleLogin}>
+                    <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <input type="password" placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    <button type="submit">Войти</button>
+                </form>
+            </div>
         </div>
     );
 };

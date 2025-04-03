@@ -20,6 +20,8 @@ def register(request):
                 username=data["username"],
                 email=data["email"],
                 password=data["password"],
+                first_name=data["first_name"],
+                last_name=data["last_name"]
             )
             return JsonResponse({"message": "Пользователь создан"}, status=201)
         except Exception as e:
