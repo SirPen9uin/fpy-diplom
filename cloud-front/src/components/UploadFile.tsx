@@ -47,18 +47,21 @@ const UploadFile = () => {
   };
 
   return (
-    <div>
+    <div className="upload">
       <h2>Загрузить файл</h2>
       {message && <p style={{ color: "green" }}>{message}</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
-      <input type="file" onChange={handleFileChange} />
+      <div className="file-upload">
+      <input className="file-input" type="file" onChange={handleFileChange} />
       <input
+        className="file-comment"
         type="text"
         placeholder="Комментарий"
         value={comment}
         onChange={(e) => setComment(e.target.value)}
       />
       <button onClick={handleUpload}>Загрузить</button>
+      </div>
     </div>
   );
 };

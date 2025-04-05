@@ -18,6 +18,7 @@ const FileManager: React.FC = () => {
                   }
   
                   const data = await response.json();
+                  console.log(data.files);
                   setFiles(data.files);
               } catch (err) {
                   setError(err.message);
@@ -174,62 +175,82 @@ const FileManager: React.FC = () => {
       };
 
     return (
-        <div>    
+        <div className="file-manager-container">    
             {loading ? (
                 <p>Загрузка данных...</p>
             ) : error ? (
                 <p style={{ color: "red" }}>{error}</p>
             ) : files.length > 0 ? (
-                <div>
+                <div className="file-list">
                     <h2>Ваши файлы:</h2>
-                    <ul>
-                        {files.map((file) => {
-                            const fileName = file.name.replace(/^uploads\//, "");
-                            const publicLink = `http://127.0.0.1:8000/storage/external/${file.external_link}/`;
-    
-                            return (
-                                <li key={file.url}>
-                                    <input
-                                        type="text"
-                                        defaultValue={fileName}
-                                        onBlur={(e) => renameFile(fileName, e.target.value.trim())}
-                                        style={{ marginRight: "10px" }}
-                                    />
-    
-                                    <button onClick={() => downloadFile(fileName)}>
-                                        Скачать
-                                    </button>
-    
-                                    <button onClick={() => deleteFile(fileName)} style={{ marginLeft: "10px", color: "red" }}>
-                                        Удалить
-                                    </button>
-    
-                                    <input
-                                        type="text"
-                                        defaultValue={file.comment || "Без комментария"}
-                                        onBlur={(e) => updateComment(fileName, e.target.value)}
-                                        style={{ marginLeft: "10px" }}
-                                    />
-    
-                                    {file.external_link ? (
-                                        <p>
-                                            🔗 Публичная ссылка:{" "}
-                                            <span
-                                                style={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}
-                                                onClick={() => copyToClipboard(publicLink)}
-                                            >
-                                                {publicLink}
-                                            </span>
-                                        </p>
-                                    ) : (
-                                        <button onClick={() => handleGenerateLink(file.name)}>
-                                            Создать ссылку
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Имя файла</th>
+                                <th>Действия с файлом</th>
+                                <th>Комментарий</th>
+                                <th>Время создания</th>
+                                <th>Публичная ссылка</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {files.map((file) => {
+                                const dotIndex = file.name.lastIndexOf(".");
+                                const nameOnly = file.name.substring(0, dotIndex);
+                                const extension = file.name.substring(dotIndex);
+                                console.log(dotIndex, nameOnly, extension);
+                                const fileName = file.name.replace(/^uploads\//, "");
+                                const publicLink = `http://127.0.0.1:8000/storage/external/${file.external_link}/`;
+        
+                                return (
+                                    <tr key={file.url}>
+                                        <td>
+                                        <input
+                                            type="text"
+                                            defaultValue={fileName}
+                                            onBlur={(e) => renameFile(fileName, e.target.value.trim())}
+                                            style={{ marginRight: "10px" }}
+                                        />
+                                        </td>
+                                        <td>
+                                        <button onClick={() => downloadFile(fileName)}>
+                                            Скачать
                                         </button>
-                                    )}
-                                </li>
-                            );
-                        })}
-                    </ul>
+        
+                                        <button onClick={() => deleteFile(fileName)} style={{ marginLeft: "10px", color: "red" }}>
+                                            Удалить
+                                        </button>
+                                        </td>
+                                        <td>
+                                        <input
+                                            type="text"
+                                            defaultValue={file.comment || "Без комментария"}
+                                            onBlur={(e) => updateComment(fileName, e.target.value)}
+                                            style={{ marginLeft: "10px" }}
+                                        />
+                                        </td>
+                                        <td>{file.uploadedAt}</td>
+                                        <td>
+                                        {file.external_link ? (
+                                            <p>
+                                                <span
+                                                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                                                    onClick={() => copyToClipboard(publicLink)}
+                                                >
+                                                    Скопировать ссылку
+                                                </span>
+                                            </p>
+                                        ) : (
+                                            <button onClick={() => handleGenerateLink(file.name)}>
+                                                Создать ссылку
+                                            </button>
+                                        )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 </div>
             ) : (
                 <p>У вас пока нет загруженных файлов.</p>

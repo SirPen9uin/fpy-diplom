@@ -126,7 +126,7 @@ const AdminPanel = () => {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,  // Передаём токен
+        "X-CSRFToken": csrfToken,
       },
       credentials: "include",
       body: JSON.stringify({ is_admin: !isAdmin }),
@@ -154,7 +154,7 @@ const AdminPanel = () => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,  // Передаём токен
+        "X-CSRFToken": csrfToken,
       },
       credentials: "include",
     });

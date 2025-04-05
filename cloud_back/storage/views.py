@@ -55,7 +55,8 @@ def list_files(request):
             "name": file.file.name,
             "url": request.build_absolute_uri(file.file.url),
             "comment": file.comment,
-            "external_link": file.external_link
+            "external_link": file.external_link,
+            "uploadedAt": file.uploaded_at
         }
         for file in files
     ]
