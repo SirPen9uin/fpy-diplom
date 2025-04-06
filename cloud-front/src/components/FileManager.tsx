@@ -5,9 +5,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 interface FileData {
     id: number;
     name: string;
-    size: number;
+    external_link: string | null;
+    url: string;
+    comment: string | null;
     uploadedAt: string;
-}
+  }
+  
 
 const FileManager: React.FC = () => {
   const [files, setFiles] = useState<FileData[]>([]);

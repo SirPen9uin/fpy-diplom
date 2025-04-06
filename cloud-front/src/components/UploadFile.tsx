@@ -41,8 +41,12 @@ const UploadFile = () => {
       } else {
         setError(data.error || "Ошибка загрузки файла.");
       }
-    } catch (err) {
-      setError(err.message || "Ошибка соединения с сервером.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Ошибка соединения с сервером.");
+      } else {
+        setError("Ошибка соединения с сервером.");
+      }
     }
   };
 
