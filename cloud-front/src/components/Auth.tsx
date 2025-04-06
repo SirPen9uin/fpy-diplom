@@ -25,7 +25,18 @@ const Auth: React.FC = () => {
             }
 
             const data = await response.json();
-            dispatch(loginUser({ user: { id: data.id, username: data.username, email: data.email, is_admin: data.is_admin } }));
+            dispatch(loginUser({
+                user: {
+                  id: data.id,
+                  username: data.username,
+                  email: data.email,
+                  is_admin: data.is_admin,
+                  first_name: data.first_name as any,
+                  last_name: data.last_name as any,
+                  file_count: data.file_count as any,
+                  total_size: data.total_size as any,
+                }
+              }));
             navigate("/dashboard");
         } catch (error) {
             console.error("Ошибка входа:", error);
