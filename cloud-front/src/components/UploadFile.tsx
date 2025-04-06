@@ -42,7 +42,7 @@ const UploadFile = () => {
         setError(data.error || "Ошибка загрузки файла.");
       }
     } catch (err) {
-      setError("Ошибка соединения с сервером.");
+      setError(err.message || "Ошибка соединения с сервером.");
     }
   };
 

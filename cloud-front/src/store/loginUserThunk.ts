@@ -1,7 +1,7 @@
-import { Dispatch } from "react";
 import { loginUser } from "./authSlice";
+import { AppDispatch } from "./store";
 
-export const loginUserThunk = (credentials: { username: string, password: string }) => async (dispatch: Dispatch) => {
+export const loginUserThunk = (credentials: { username: string, password: string }) => async (dispatch: AppDispatch) => {
   try {
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login/`, {
       method: "POST",

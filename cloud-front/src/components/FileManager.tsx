@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+interface FileData {
+    id: number;
+    name: string;
+    size: number;
+    uploadedAt: string;
+}
+
 const FileManager: React.FC = () => {
   const [files, setFiles] = useState<FileData[]>([]);
       const [loading, setLoading] = useState(true);
@@ -20,8 +28,10 @@ const FileManager: React.FC = () => {
                   const data = await response.json();
                   console.log(data.files);
                   setFiles(data.files);
-              } catch (err) {
+              } catch (err:unknown) {
+                if (err instanceof Error) {
                   setError(err.message);
+                }
               } finally {
                   setLoading(false);
               }

@@ -6,6 +6,10 @@ interface User {
   id: number;
   username: string;
   email: string;
+  first_name: string; 
+  last_name: string;  
+  file_count: number; 
+  total_size: number; 
   is_admin: boolean;
 }
 
@@ -14,6 +18,7 @@ interface File {
   name: string;
   size: number;
   comment: string;
+  uploadedAt: string;
 }
 
 const AdminPanel = () => {
@@ -33,14 +38,25 @@ const AdminPanel = () => {
   const fetchUserFiles = async (user: User) => {
     setSelectedUser(user);
     setFileModalOpen(true);
-
+  
     try {
       const res = await fetch(`${API_BASE_URL}/admin_panel/users/${user.id}/storage/`, { credentials: "include" });
       const data = await res.json();
+  
       setUserFiles(data.files);
-      setRenameInputs(data.files.reduce((acc: any, file: File) => ({ ...acc, [file.id]: file.name }), {}));
-    } catch (err) {
-      console.error("Ошибка загрузки файлов пользователя:", err);
+
+      setRenameInputs(
+        data.files.reduce((acc: Record<number, string>, file: File) => {
+          acc[file.id] = file.name;
+          return acc;
+        }, {})
+      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Ошибка загрузки файлов пользователя:", err.message);
+      } else {
+        console.error("Неизвестная ошибка:", err);
+      }
     }
   };
 

@@ -1,7 +1,7 @@
 import React from "react";
 import FileManager from "../components/FileManager";
 import UploadFile from "../components/UploadFile";
-const userData = JSON.parse(localStorage.getItem('user'));
+const userData = JSON.parse(localStorage.getItem('user') ?? '{}');
 
 const Dashboard: React.FC = () => {
   

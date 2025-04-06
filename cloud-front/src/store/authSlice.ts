@@ -4,6 +4,10 @@ interface User {
   id: number;
   username: string;
   email: string;
+  first_name: string; 
+  last_name: string;  
+  file_count: number; 
+  total_size: number; 
   is_admin: boolean;
 }
 
