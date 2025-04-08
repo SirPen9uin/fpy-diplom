@@ -28,7 +28,7 @@ const UploadFile = () => {
     formData.append("comment", comment);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/storage/upload/`, {
+      const response = await fetch(`${API_BASE_URL}/api/storage/upload/`, {
         method: "POST",
         body: formData,
         credentials: "include",

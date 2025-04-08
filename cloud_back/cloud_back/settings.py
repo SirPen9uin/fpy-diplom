@@ -27,9 +27,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+load_dotenv()
+
 ALLOWED_HOSTS = []
 
-load_dotenv()
+
 
 
 # Application definition

@@ -3,6 +3,8 @@ import { useDispatch } from "react-redux";
 import { loginUser } from "../store/authSlice";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const Auth: React.FC = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -11,9 +13,10 @@ const Auth: React.FC = () => {
 
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
+        console.log(API_BASE_URL);
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/auth/login/", {
+            const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },

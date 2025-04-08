@@ -20,7 +20,7 @@ const FileManager: React.FC = () => {
       useEffect(() => {
           async function fetchFiles() {
               try {
-                  const response = await fetch(`${API_BASE_URL}/storage/files/`, {
+                  const response = await fetch(`${API_BASE_URL}/api/storage/files/`, {
                       credentials: 'include',
                   });
   
@@ -48,7 +48,7 @@ const FileManager: React.FC = () => {
           const fileName = filePath.replace(/^uploads\//, "");
         
           try {
-            const response = await fetch(`${API_BASE_URL}/storage/files/${fileName}/link/`, {
+            const response = await fetch(`${API_BASE_URL}/api/storage/files/${fileName}/link/`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -74,7 +74,7 @@ const FileManager: React.FC = () => {
         const downloadFile = async (filePath: string) => {
           const fileName = filePath.replace(/^uploads\//, "");
           try {
-              const response = await fetch(`${API_BASE_URL}/storage/files/${filePath}/`, {
+              const response = await fetch(`${API_BASE_URL}/api/storage/files/${filePath}/`, {
                   method: "GET",
                   credentials: "include",
               });
@@ -108,7 +108,7 @@ const FileManager: React.FC = () => {
   
       const deleteFile = async (fileName: string) => {
           try {
-              const response = await fetch(`${API_BASE_URL}/storage/files/${fileName}/delete/`, {
+              const response = await fetch(`${API_BASE_URL}/api/storage/files/${fileName}/delete/`, {
                   method: "DELETE",
                   credentials: "include",
               });
@@ -132,7 +132,7 @@ const FileManager: React.FC = () => {
           }
   
           try {
-              const response = await fetch(`${API_BASE_URL}/storage/files/rename/`, {
+              const response = await fetch(`${API_BASE_URL}/api/storage/files/rename/`, {
                   method: "PATCH",
                   credentials: "include",
                   headers: {
@@ -161,7 +161,7 @@ const FileManager: React.FC = () => {
       
       const updateComment = async (fileName: string, newComment: string) => {
           try {
-              const response = await fetch(`${API_BASE_URL}/storage/files/${fileName}/comment/`, {
+              const response = await fetch(`${API_BASE_URL}/api/storage/files/${fileName}/comment/`, {
                   method: "PATCH",
                   credentials: "include",
                   headers: {

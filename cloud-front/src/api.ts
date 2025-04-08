@@ -1,7 +1,7 @@
-const API_URL = "http://127.0.0.1:8000/auth/";
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function getCsrfToken() {
-    const response = await fetch(`${API_URL}auth/csrf/`, {
+    const response = await fetch(`${API_URL}/api/auth/csrf/`, {
         credentials: "include",
     });
     return response.json();
@@ -9,7 +9,7 @@ export async function getCsrfToken() {
 
 export async function register(email: string, password: string, username: string) {
 
-    const response = await fetch(`${API_URL}/register/`, {
+    const response = await fetch(`${API_URL}/api/auth/register/`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -21,7 +21,7 @@ export async function register(email: string, password: string, username: string
 }
 
 export async function login(email: string, password: string) {
-    const response = await fetch(`${API_URL}login/`, {
+    const response = await fetch(`${API_URL}/api/auth/login/`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -31,7 +31,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout() {
-    await fetch(`${API_URL}logout/`, {
+    await fetch(`${API_URL}/api/logout/`, {
         method: "POST",
         credentials: "include",
     });
