@@ -34,10 +34,10 @@ const Auth: React.FC = () => {
                   username: data.username,
                   email: data.email,
                   is_admin: data.is_admin,
-                  first_name: data.first_name as any,
-                  last_name: data.last_name as any,
-                  file_count: data.file_count as any,
-                  total_size: data.total_size as any,
+                  first_name: data.first_name as string,
+                  last_name: data.last_name as string,
+                  file_count: data.file_count as number,
+                  total_size: data.total_size as number,
                 }
               }));
             navigate("/dashboard");
