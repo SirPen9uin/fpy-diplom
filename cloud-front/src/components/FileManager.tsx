@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import CopyButton from './CopyButton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -97,15 +98,7 @@ const FileManager: React.FC = () => {
           }    
   
         };
-        const copyToClipboard = async (text: string) => {
-          try {
-              await navigator.clipboard.writeText(text);
-              alert("Ссылка скопирована в буфер обмена!");
-          } catch (error) {
-              console.error("Ошибка копирования:", error);
-          }
-      };
-  
+        
       const deleteFile = async (fileName: string) => {
           try {
               const response = await fetch(`${API_BASE_URL}/api/storage/files/${fileName}/delete/`, {
@@ -244,20 +237,13 @@ const FileManager: React.FC = () => {
                                         </td>
                                         <td>{file.uploadedAt}</td>
                                         <td>
-                                        {file.external_link ? (
-                                            <p>
-                                                <span
-                                                    style={{ cursor: "pointer", textDecoration: "underline" }}
-                                                    onClick={() => copyToClipboard(publicLink)}
-                                                >
-                                                    Скопировать ссылку
-                                                </span>
-                                            </p>
-                                        ) : (
-                                            <button onClick={() => handleGenerateLink(file.name)}>
+                                            {file.external_link ? (
+                                                <CopyButton publicLink={publicLink} />
+                                            ) : (
+                                                <button onClick={() => handleGenerateLink(file.name)}>
                                                 Создать ссылку
-                                            </button>
-                                        )}
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 );
