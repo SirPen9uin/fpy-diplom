@@ -159,7 +159,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # Настройки CORS
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5173","http://localhost","http://89.104.66.14",
+    "http://127.0.0.1:5173","http://localhost","http://80.78.243.224",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -167,8 +167,7 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False  
 CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:5173","http://localhost","http://89.104.66.14",
+    "http://127.0.0.1:5173","http://localhost","http://80.78.243.224",
 ]
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = True
