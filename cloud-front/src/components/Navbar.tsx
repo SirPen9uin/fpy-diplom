@@ -3,13 +3,33 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store/store";
 import { logoutUser } from "../store/authSlice";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const Navbar = () => {
   const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.auth.user); // Получаем пользователя из Redux
+  const user = useSelector((state: RootState) => state.auth.user);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logoutUser(); // Логаут через redux
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/logout/`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (response.ok) {
+        // Сессия на бэке удалена, теперь чистим клиент
+        dispatch(logoutUser());
+      } else {
+        // Можно показать ошибку или логировать
+        console.error("Ошибка при выходе из системы");
+      }
+    } catch (error) {
+      console.error("Ошибка сети при выходе из системы", error);
+    }
     dispatch(logoutUser()); // Обновляем состояние
     navigate("/login"); // Перенаправляем на страницу входа
   };

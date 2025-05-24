@@ -66,6 +66,7 @@ def csrf_token(request):
     return JsonResponse({'csrfToken': csrf_token})  # Отправляем токен в ответе
 
 
+@csrf_exempt
 @require_POST
 def logout_view(request):
     if not request.user.is_authenticated:
