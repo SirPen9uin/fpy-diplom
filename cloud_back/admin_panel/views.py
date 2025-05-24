@@ -95,7 +95,7 @@ def user_storage_info(request, user_id):
     user = get_object_or_404(User, id=user_id)
     files = File.objects.filter(owner=user)
     
-    file_info = [{"name": file.file.name, "size": file.file.size, "comment": file.comment, "id": file.id, "uploadedAt": file.uploaded_at} for file in files]
+    file_info = [{"name": file.file.name, "size": file.file.size, "comment": file.comment, "id": file.id, "uploadedAt": file.uploaded_at.strftime("%Y-%m-%d %H:%M:%S")} for file in files]
     total_size = sum(file["size"] for file in file_info)
 
     return JsonResponse({

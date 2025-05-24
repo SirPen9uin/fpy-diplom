@@ -1,10 +1,7 @@
 import React, { useState } from "react";
+import { UploadFileProps } from "../types/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-interface UploadFileProps {
-  onUploadSuccess: () => void;
-}
 
 const UploadFile: React.FC<UploadFileProps> = ({ onUploadSuccess}) => {
   const [file, setFile] = useState<File | null>(null);

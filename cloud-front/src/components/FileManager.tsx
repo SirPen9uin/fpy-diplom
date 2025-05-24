@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from "react";
 import CopyButton from './CopyButton';
+import { FileData } from "../types/types";
+import { FileManagerProps } from "../types/types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-interface FileData {
-    id: number;
-    name: string;
-    external_link: string | null;
-    url: string;
-    comment: string | null;
-    uploadedAt: string;
-  }
-
-interface FileManagerProps {
-    refresh: boolean;
-}
-  
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;  
 
 const FileManager: React.FC<FileManagerProps> = ( { refresh }) => {
   const [files, setFiles] = useState<FileData[]>([]);

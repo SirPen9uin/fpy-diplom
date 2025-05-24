@@ -3,6 +3,8 @@ import { useDispatch } from "react-redux";
 import { loginUser } from "../store/authSlice";
 import { useNavigate } from "react-router-dom";
 
+import type { User } from "../types/types";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Auth = () => {
@@ -53,18 +55,20 @@ const Auth = () => {
                 return;
             }
 
-            dispatch(loginUser({
-                user: {
-                    id: data.id,
-                    username: data.username,
-                    email: data.email,
-                    is_admin: data.is_admin,
-                    first_name: data.first_name as string,
-                    last_name: data.last_name as string,
-                    file_count: data.file_count as number,
-                    total_size: data.total_size as number,
-                }
-            }));
+            const user: User = {
+                id: data.id,
+                username: data.username,
+                email: data.email,
+                is_admin: data.is_admin,
+                first_name: data.first_name,
+                last_name: data.last_name,
+                file_count: data.file_count,
+                total_size: data.total_size,
+            };
+            dispatch(loginUser({ user }));
+            if (user.is_admin) {
+                navigate("/admin");
+            }
             navigate("/dashboard");
         } catch (err: unknown) {
             if (err instanceof Error) {

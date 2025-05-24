@@ -1,25 +1,9 @@
 import { useEffect, useState } from "react";
+import { User } from "../types/types";
+import { File } from "../types/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  first_name: string; 
-  last_name: string;  
-  file_count: number; 
-  total_size: number; 
-  is_admin: boolean;
-}
-
-interface File {
-  id: number;
-  name: string;
-  size: number;
-  comment: string;
-  uploadedAt: string;
-}
 
 const AdminPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -29,7 +13,7 @@ const AdminPanel = () => {
   const [renameInputs, setRenameInputs] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/admin_panel/users/`, { credentials: "include" })
+    fetch(`${API_BASE_URL}/api/admin_panel/users/`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setUsers(data.users))
       .catch((err) => console.error("Ошибка загрузки пользователей:", err));
@@ -40,7 +24,7 @@ const AdminPanel = () => {
     setFileModalOpen(true);
   
     try {
-      const res = await fetch(`${API_BASE_URL}/admin_panel/users/${user.id}/storage/`, { credentials: "include" });
+      const res = await fetch(`${API_BASE_URL}/api/admin_panel/users/${user.id}/storage/`, { credentials: "include" });
       const data = await res.json();
   
       setUserFiles(data.files);
@@ -70,7 +54,7 @@ const AdminPanel = () => {
     if (!fileId || !newName) return;
 
     try {
-      await fetch(`${API_BASE_URL}/admin_panel/users/${selectedUser.id}/storage/${fileId}/rename/`, {
+      await fetch(`${API_BASE_URL}/api/admin_panel/users/${selectedUser.id}/storage/${fileId}/rename/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -93,7 +77,7 @@ const AdminPanel = () => {
     if (!selectedUser) return;
 
     try {
-      await fetch(`${API_BASE_URL}/admin_panel/users/${selectedUser.id}/storage/${fileId}/comment/`, {
+      await fetch(`${API_BASE_URL}/api/admin_panel/users/${selectedUser.id}/storage/${fileId}/comment/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -116,7 +100,7 @@ const AdminPanel = () => {
     if (!selectedUser) return;
 
     try {
-      await fetch(`${API_BASE_URL}/admin_panel/users/${selectedUser.id}/storage/${fileId}/delete/`, {
+      await fetch(`${API_BASE_URL}/api/admin_panel/users/${selectedUser.id}/storage/${fileId}/delete/`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -138,21 +122,31 @@ const AdminPanel = () => {
       return;
     }
   
-    await fetch(`${API_BASE_URL}/admin_panel/users/${userId}/admin/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,
-      },
-      credentials: "include",
-      body: JSON.stringify({ is_admin: !isAdmin }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin_panel/users/${userId}/admin/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        credentials: "include",
+        body: JSON.stringify({ is_admin: !isAdmin }),
+      });
   
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId ? { ...user, is_admin: !isAdmin } : user
-      )
-    );
+      if (!response.ok) {
+        const data = await response.json();
+        console.error("Ошибка при изменении статуса администратора:", data.error || response.statusText);
+        return; // Не меняем локальный стейт, если ошибка
+      }
+  
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, is_admin: !isAdmin } : user
+        )
+      );
+    } catch (error) {
+      console.error("Ошибка запроса:", error);
+    }
   };
 
   const handleDeleteUser = async (userId: number) => {
@@ -166,7 +160,7 @@ const AdminPanel = () => {
       return;
     }
   
-    await fetch(`${API_BASE_URL}/admin_panel/users/${userId}/delete/`, {
+    await fetch(`${API_BASE_URL}/api/admin_panel/users/${userId}/delete/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -226,7 +220,6 @@ const AdminPanel = () => {
           <h3>Общий размер файлов: {userFiles.reduce((acc, file) => acc + file.size, 0)}</h3>
           <ul>
             {userFiles.map((file) => (
-              console.log(file),
               <li key={file.id}>
                 <span>{file.id}</span>
                 <span>{file.uploadedAt}</span>
