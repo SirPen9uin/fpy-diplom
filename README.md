@@ -145,7 +145,7 @@
    ```
 16. Активируем его:
    ```
-   source env/bin/activate
+   source venv/bin/activate
    ```
 17. Устанавливаем проектные зависимости:
    ```
@@ -202,22 +202,21 @@
    ```
    sudo nano /etc/systemd/system/gunicorn.service
    ```
-   внутри сервисного файла указываем:
+   внутри сервисного файла указываем(все <**username**> заменяем на созданного пользователя):
    ```
-     ```
   [Unit]
   Description=gunicorn service
   After=network.target
 
   [Service]
-  User=<имя пользователя>
+  User=<**username**>
   Group=www-data
-  WorkingDirectory=/home/<username>/fpy-diplom/cloud_back
-  ExecStart=/home/<имя пользователя>/fpy-diplom/cloud_back/env/bin/gunicorn \
+  WorkingDirectory=/home/<**username**>/fpy-diplom/cloud_back
+  ExecStart=/home/<**username**>/fpy-diplom/cloud_back/cloud_back/venv/bin/gunicorn \
            --access-logfile - \
            --workers=3 \
-           --bind unix:/home/<username>/fpy-diplom/cloud_back/cloud_back/project.sock \
-           backend.wsgi:application
+           --bind unix:/home/<**username**>/fpy-diplom/cloud_back/cloud_back/project.sock \
+           cloud_back.wsgi:application
 
   [Install]
   WantedBy=multi-user.target
