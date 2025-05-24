@@ -136,7 +136,7 @@ const AdminPanel = () => {
       if (!response.ok) {
         const data = await response.json();
         console.error("Ошибка при изменении статуса администратора:", data.error || response.statusText);
-        return; // Не меняем локальный стейт, если ошибка
+        return;
       }
   
       setUsers((prevUsers) =>

@@ -39,6 +39,7 @@
         #Django block
         SECRET_KEY=
         ALLOWED_HOSTS=
+        DEBUG=
 
         #Admin block
         ADMIN_USER=
@@ -168,10 +169,11 @@
    DB_PASSWORD=
    DB_HOST=
    DB_PORT=
-   ALLOWED_HOSTS=
 
    #Django block
    SECRET_KEY=
+   ALLOWED_HOSTS=
+   DEBUG=
 
    #Admin block
    ADMIN_USER=
