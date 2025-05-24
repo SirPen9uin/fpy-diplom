@@ -1,12 +1,17 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const UploadFile = () => {
+interface UploadFileProps {
+  onUploadSuccess: () => void;
+}
+
+const UploadFile: React.FC<UploadFileProps> = ({ onUploadSuccess}) => {
   const [file, setFile] = useState<File | null>(null);
   const [comment, setComment] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -37,7 +42,16 @@ const UploadFile = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(`Файл ${data.file} успешно загружен!`);
+        const successMessage = `Файл ${data.file} успешно загружен!`;
+        setMessage(successMessage);
+      
+        setTimeout(() => {
+          setMessage("");
+        }, 5000);
+      
+        setFile(null);
+        setComment("");
+        onUploadSuccess();
       } else {
         setError(data.error || "Ошибка загрузки файла.");
       }

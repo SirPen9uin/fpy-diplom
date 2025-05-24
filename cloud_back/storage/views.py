@@ -1,8 +1,9 @@
 import json
+import mimetypes
 import os
 import uuid
 
-from django.http import JsonResponse, FileResponse
+from django.http import Http404, JsonResponse, FileResponse
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -56,7 +57,7 @@ def list_files(request):
             "url": request.build_absolute_uri(file.file.url),
             "comment": file.comment,
             "external_link": file.external_link,
-            "uploadedAt": file.uploaded_at
+            "uploadedAt": file.uploaded_at.strftime("%Y-%m-%d %H:%M:%S")
         }
         for file in files
     ]
@@ -175,17 +176,22 @@ def generate_external_link(request, filename):
     file.external_link = str(uuid.uuid4())
     file.save()
     
-    return JsonResponse({"message": "Ссылка создана", "external_link": request.build_absolute_uri(f"/storage/external/{file.external_link}/")})
+    return JsonResponse({"message": "Ссылка создана", "external_link": f"{file.external_link}"})
 
 @csrf_exempt
 def download_via_external_link(request, external_link):
-    """Эндпоинт для скачивания файла по специальной ссылке"""
-    if request.method != "GET":
-        return JsonResponse({"error": "Метод не поддерживается"}, status=405)
-    file = get_object_or_404(File, external_link=external_link)
-    file_path = os.path.join(settings.MEDIA_ROOT, file.file.name)
-    
+    """Обработка внешней публичной ссылки для просмотра файла"""
+    try:
+        file = File.objects.get(external_link=external_link)
+    except File.DoesNotExist:
+        raise Http404("Файл не найден")
+
+    file_path = file.file.path
     if not os.path.exists(file_path):
-        return JsonResponse({"error": "Файл не найден"}, status=404)
-    
-    return FileResponse(open(file_path, "rb"), as_attachment=True, filename=os.path.basename(file_path))
+        raise Http404("Файл отсутствует на сервере")
+
+    # Определим MIME-тип
+    mime_type, _ = mimetypes.guess_type(file_path)
+    mime_type = mime_type or 'application/octet-stream'
+
+    return FileResponse(open(file_path, 'rb'), content_type=mime_type)

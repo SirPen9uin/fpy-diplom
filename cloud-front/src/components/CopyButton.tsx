@@ -13,7 +13,7 @@ const CopyButton: React.FC<{ publicLink: string }> = ({ publicLink }) => {
       });
   
       clipboard.on('error', () => {
-        alert('Не удалось скопировать ссылку');
+        console.error('Не удалось скопировать ссылку');
       });
   
       return () => {

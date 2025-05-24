@@ -11,38 +11,37 @@ interface FileData {
     comment: string | null;
     uploadedAt: string;
   }
+
+interface FileManagerProps {
+    refresh: boolean;
+}
   
 
-const FileManager: React.FC = () => {
+const FileManager: React.FC<FileManagerProps> = ( { refresh }) => {
   const [files, setFiles] = useState<FileData[]>([]);
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState<string | null>(null);
+
+      const fetchFiles = async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/storage/files/`, {
+            credentials: 'include',
+          });
+      
+          if (!response.ok) throw new Error('Ошибка загрузки файлов');
+      
+          const data = await response.json();
+          setFiles(data.files);
+        } catch (err: unknown) {
+          if (err instanceof Error) setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
   
       useEffect(() => {
-          async function fetchFiles() {
-              try {
-                  const response = await fetch(`${API_BASE_URL}/api/storage/files/`, {
-                      credentials: 'include',
-                  });
-  
-                  if (!response.ok) {
-                      throw new Error('Ошибка загрузки файлов');
-                  }
-  
-                  const data = await response.json();
-                  console.log(data.files);
-                  setFiles(data.files);
-              } catch (err:unknown) {
-                if (err instanceof Error) {
-                  setError(err.message);
-                }
-              } finally {
-                  setLoading(false);
-              }
-          }
-  
           fetchFiles();
-      }, []);
+      }, [refresh]);
   
       const handleGenerateLink = async (filePath: string) => {
 
@@ -107,15 +106,14 @@ const FileManager: React.FC = () => {
               });
       
               if (response.ok) {
-                  alert("Файл успешно удален");
                   setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
+                  fetchFiles();
               } else {
                   const data = await response.json();
-                  alert(`Ошибка: ${data.error}`);
+                  console.error("Ошибка при удалении файла:", data.error);
               }
           } catch (error) {
               console.error("Ошибка при удалении файла:", error);
-              alert("Не удалось удалить файл");
           }
       };
       
@@ -135,7 +133,6 @@ const FileManager: React.FC = () => {
               });
       
               if (response.ok) {
-                  alert("Файл успешно переименован");
                   setFiles((prevFiles) =>
                       prevFiles.map((file) =>
                           file.name === oldName ? { ...file, name: newName } : file
@@ -143,11 +140,10 @@ const FileManager: React.FC = () => {
                   );
               } else {
                   const data = await response.json();
-                  alert(`Ошибка: ${data.error}`);
+                  console.error("Ошибка при переименовании файла:", data.error);
               }
           } catch (error) {
               console.error("Ошибка при переименовании файла:", error);
-              alert("Не удалось переименовать файл");
           }
       };
       
@@ -164,7 +160,6 @@ const FileManager: React.FC = () => {
               });
       
               if (response.ok) {
-                  alert("Комментарий обновлен");
                   setFiles((prevFiles) =>
                       prevFiles.map((file) =>
                           file.name === fileName ? { ...file, comment: newComment } : file
@@ -172,11 +167,10 @@ const FileManager: React.FC = () => {
                   );
               } else {
                   const data = await response.json();
-                  alert(`Ошибка: ${data.error}`);
+                  console.error("Ошибка при обновлении комментария:", data.error);
               }
           } catch (error) {
               console.error("Ошибка при обновлении комментария:", error);
-              alert("Не удалось обновить комментарий");
           }
       };
 
@@ -206,7 +200,7 @@ const FileManager: React.FC = () => {
                                 const extension = file.name.substring(dotIndex);
                                 console.log(dotIndex, nameOnly, extension);
                                 const fileName = file.name.replace(/^uploads\//, "");
-                                const publicLink = `http://127.0.0.1:8000/storage/external/${file.external_link}/`;
+                                const publicLink = `${API_BASE_URL}/api/storage/external/${file.external_link}/`;
         
                                 return (
                                     <tr key={file.url}>
