@@ -168,10 +168,10 @@
    DB_PASSWORD=
    DB_HOST=
    DB_PORT=
+   ALLOWED_HOSTS=
 
    #Django block
    SECRET_KEY=
-   ALLOWED_HOSTS=
 
    #Admin block
    ADMIN_USER=
@@ -204,22 +204,22 @@
    ```
    внутри сервисного файла указываем(все <**username**> заменяем на созданного пользователя):
    ```
-  [Unit]
-  Description=gunicorn service
-  After=network.target
+   [Unit]
+   Description=gunicorn service
+   After=network.target
 
-  [Service]
-  User=<**username**>
-  Group=www-data
-  WorkingDirectory=/home/<**username**>/fpy-diplom/cloud_back
-  ExecStart=/home/<**username**>/fpy-diplom/cloud_back/cloud_back/venv/bin/gunicorn \
-           --access-logfile - \
-           --workers=3 \
-           --bind unix:/home/<**username**>/fpy-diplom/cloud_back/cloud_back/project.sock \
-           cloud_back.wsgi:application
+   [Service]
+   User=<**username**>
+   Group=www-data
+   WorkingDirectory=/home/<**username**>/fpy-diplom/cloud_back/
+   ExecStart=/home/<**username**>/fpy-diplom/cloud_back/venv/bin/gunicorn \
+         --access-logfile - \
+         --workers=3 \
+         --bind unix:/home/<**username**>/fpy-diplom/cloud_back/cloud_back/project.sock \
+         cloud_back.wsgi:application
 
-  [Install]
-  WantedBy=multi-user.target
+   [Install]
+   WantedBy=multi-user.target
   ```
 27. Запускаем сокет gunicorn:
    ```
@@ -236,11 +236,11 @@
    ```
    sudo nano /etc/nginx/sites-available/cloud_back
    ```
-   внутри файла прописываем следующее содержимое:
+   внутри файла прописываем следующее содержимое (все <**username**> заменяем на созданного пользователя>):
    ```
    server {
      listen 80;
-     server_name <ip_адрес_сервера>;
+     server_name <ip адрес сервера>;
 
      location = /favicon.ico {
         access_log off;
@@ -248,23 +248,23 @@
      }
 
      location /static/ {
-        root /home/<username>/fpy-diplom/cloud_back;
+        alias /home/<**username**>/fpy-diplom/cloud_back/staticfiles/;
      }
 
      location /media/ {
-        root /home/<username>/fpy-diplom/cloud_back;
+        alias /home/<**username**>/fpy-diplom/cloud_back/media;
      }
 
      location /api/ {
         include proxy_params;
-        proxy_pass http://unix:/home/<username>/fpy-diplom/cloud_back/cloud_back/project.sock;
+        proxy_pass http://unix:/home/<**username**>/fpy-diplom/cloud_back/cloud_back/project.sock;
      }
-
-     location / {
-        root /home/<username>/fpy-diplom/cloud-front/dist;
+         location / {
+        root /home/<**username**>/fpy-diplom/cloud-front/dist;
         try_files $uri $uri/ /index.html;
      }
-  }
+     client_max_body_size 100M;
+   }
    ```
 30. Создаем символическую ссылку:
    ```
