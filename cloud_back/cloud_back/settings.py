@@ -29,7 +29,7 @@ DEBUG = True
 
 load_dotenv()
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 
 

@@ -11,17 +11,17 @@
    ```
 3. Открываем в любой IDE и запускаем встроенный терминал
 
-4. Переходим в папку `cloud_back`:
-   ```
-   cd backend
-   ```
-5. Создаём виртуальное окружение:
+4. Создаём виртуальное окружение:
    ```
    python -m venv .venv
    ```
-6. Активируем его:
+5. Активируем его:
    ```
    .venv/Scripts/Activate
+   ```
+6. Переходим в папку `cloud_back`:
+   ```
+   cd backend
    ```
 7. Устанавливаем зависимости:
    ```
@@ -51,7 +51,7 @@
    psql -U postgres
    ```
 10. Создаём базу данных с учётом настроек указанных в файле `.env`:
-   `createdb -U <DB_USER> <DB_NAME>` Пароль: `<DB_PASSWORD>`
+   `CREATE DATABASE <DB_NAME> WITH PASSWORD <DB_PASSWORD>;`
 11. Применяем миграции:
    ```
    python manage.py migrate
